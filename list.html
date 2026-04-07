@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧購物清單 - 清單檢視</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #2C3E50;
+            font-weight: 700;
+        }
+
+        .btn-back {
+            background: #E5E7EB;
+            color: #2C3E50;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: #D1D5DB;
+            transform: translateY(-2px);
+        }
+
+        .btn-back:active {
+            transform: translateY(0);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .stat-card.need {
+            border-top: 4px solid #10B981;
+        }
+
+        .stat-card.want {
+            border-top: 4px solid #F59E0B;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7F8C8D;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2C3E50;
+        }
+
+        .list-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title.need::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #10B981;
+            border-radius: 50%;
+        }
+
+        .section-title.want::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #F59E0B;
+            border-radius: 50%;
+        }
+
+        .list-item {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .list-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 6px;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .item-price {
+            font-size: 14px;
+            color: #34495E;
+            font-weight: 600;
+        }
+
+        .item-category {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .item-category.need {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .item-category.want {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .btn-delete {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-delete:hover {
+            background: #FCA5A5;
+            transform: scale(1.05);
+        }
+
+        .btn-delete:active {
+            transform: scale(0.95);
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            color: #7F8C8D;
+            margin-bottom: 24px;
+        }
+
+        .btn-add {
+            background: #34495E;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add:hover {
+            background: #2C3E50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 73, 94, 0.3);
+        }
+
+        .btn-add:active {
+            transform: translateY(0);
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: #7F8C8D;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2C3E50;
+        }
+
+        .summary-value.total {
+            color: #34495E;
+            font-size: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #34495E;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2C3E50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 73, 94, 0.3);
+        }
+
+        .btn-secondary {
+            background: #E5E7EB;
+            color: #2C3E50;
+        }
+
+        .btn-secondary:hover {
+            background: #D1D5DB;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .btn-danger:hover {
+            background: #FCA5A5;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 購物清單</h1>
+            <button class="btn-back" onclick="window.location.href='index.html'">← 返回</button>
+        </div>
+
+        <!-- 統計卡片 -->
+        <div class="stats-container" id="statsContainer"></div>
+
+        <!-- 清單內容 -->
+        <div id="listContent"></div>
+
+        <!-- 操作按鈕 -->
+        <div class="action-buttons" id="actionButtons"></div>
+    </div>
+
+    <script>
+        // ========== 初始化與工具函數 ==========
+
+        /**
+         * 初始化應用：載入資料並渲染清單
+         */
+        function initializeApp() {
+            renderList();
+        }
+
+        // ========== localStorage 操作 ==========
+
+        /**
+         * 從 localStorage 讀取所有物品
+         * @returns {Array} 物品陣列
+         */
+        function getItems() {
+            const data = localStorage.getItem('shoppingList');
+            return data ? JSON.parse(data) : [];
+        }
+
+        /**
+         * 儲存物品陣列到 localStorage
+         * @param {Array} items - 物品陣列
+         */
+        function saveItems(items) {
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+        }
+
+        /**
+         * 刪除指定 ID 的物品
+         * @param {number} itemId - 物品 ID
+         */
+        function deleteItem(itemId) {
+            if (!confirm('確定要刪除這個物品嗎？')) {
+                return;
+            }
+
+            const items = getItems();
+            const filteredItems = items.filter(item => item.id !== itemId);
+            saveItems(filteredItems);
+            renderList();
+        }
+
+        /**
+         * 清空所有物品
+         */
+        function clearAllItems() {
+            if (!confirm('確定要清空所有物品嗎？此操作無法復原。')) {
+                return;
+            }
+
+            localStorage.removeItem('shoppingList');
+            renderList();
+        }
+
+        // ========== 排序邏輯 ==========
+
+        /**
+         * 根據核心邏輯排序物品
+         * 規則：
+         * 1. 「需要 (Need)」優先於「想要 (Want)」
+         * 2. 同類別中，價格低優先
+         * @param {Array} items - 物品陣列
+         * @returns {Array} 排序後的物品陣列
+         */
+        function sortItems(items) {
+            return items.sort((a, b) => {
+                // 首先按分類排序：Need (0) > Want (1)
+                const categoryOrder = {
+                    'need': 0,
+                    'want': 1
+                };
+
+                const categoryDiff = categoryOrder[a.category] - categoryOrder[b.category];
+                if (categoryDiff !== 0) {
+                    return categoryDiff;
+                }
+
+                // 同分類中，按價格從低到高排序
+                return a.price - b.price;
+            });
+        }
+
+        // ========== 統計計算 ==========
+
+        /**
+         * 計算統計數據
+         * @param {Array} items - 物品陣列
+         * @returns {Object} 統計物件
+         */
+        function calculateStats(items) {
+            const needItems = items.filter(item => item.category === 'need');
+            const wantItems = items.filter(item => item.category === 'want');
+
+            const needTotal = needItems.reduce((sum, item) => sum + item.price, 0);
+            const wantTotal = wantItems.reduce((sum, item) => sum + item.price, 0);
+
+            return {
+                needCount: needItems.length,
+                wantCount: wantItems.length,
+                needTotal: needTotal,
+                wantTotal: wantTotal,
+                grandTotal: needTotal + wantTotal
+            };
+        }
+
+        // ========== 渲染函數 ==========
+
+        /**
+         * 渲染整個清單頁面
+         */
+        function renderList() {
+            const items = getItems();
+            const sortedItems = sortItems(items);
+            const stats = calculateStats(sortedItems);
+
+            // 渲染統計卡片
+            renderStats(stats);
+
+            // 根據是否有物品決定顯示內容
+            if (sortedItems.length === 0) {
+                renderEmptyState();
+            } else {
+                renderListContent(sortedItems);
+            }
+
+            // 渲染操作按鈕
+            renderActionButtons(sortedItems.length > 0);
+        }
+
+        /**
+         * 渲染統計卡片
+         * @param {Object} stats - 統計物件
+         */
+        function renderStats(stats) {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = `
+                <div class="stat-card need">
+                    <div class="stat-label">需要 (Need)</div>
+                    <div class="stat-value">${stats.needCount}</div>
+                </div>
+                <div class="stat-card want">
+                    <div class="stat-label">想要 (Want)</div>
+                    <div class="stat-value">${stats.wantCount}</div>
+                </div>
+            `;
+        }
+
+        /**
+         * 渲染空狀態
+         */
+        function renderEmptyState() {
+            const container = document.getElementById('listContent');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🛍️</div>
+                    <div class="empty-state-title">清單是空的</div>
+                    <div class="empty-state-text">開始新增物品來建立你的購物清單吧</div>
+                    <button class="btn-add" onclick="window.location.href='index.html'">+ 新增第一個物品</button>
+                </div>
+            `;
+        }
+
+        /**
+         * 渲染清單內容
+         * @param {Array} items - 排序後的物品陣列
+         */
+        function renderListContent(items) {
+            const container = document.getElementById('listContent');
+            const stats = calculateStats(items);
+
+            // 分離需要和想要的物品
+            const needItems = items.filter(item => item.category === 'need');
+            const wantItems = items.filter(item => item.category === 'want');
+
+            let html = '';
+
+            // 渲染「需要」區塊
+            if (needItems.length > 0) {
+                html += '<div class="list-section">';
+                html += '<div class="section-title need">需要 (Need)</div>';
+                html += needItems.map(item => renderListItem(item)).join('');
+                html += '</div>';
+            }
+
+            // 渲染「想要」區塊
+            if (wantItems.length > 0) {
+                html += '<div class="list-section">';
+                html += '<div class="section-title want">想要 (Want)</div>';
+                html += wantItems.map(item => renderListItem(item)).join('');
+                html += '</div>';
+            }
+
+            // 渲染總結卡片
+            html += `
+                <div class="summary-card">
+                    <div class="summary-row">
+                        <span class="summary-label">需要總額</span>
+                        <span class="summary-value">$${stats.needTotal.toFixed(2)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">想要總額</span>
+                        <span class="summary-value">$${stats.wantTotal.toFixed(2)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">總計</span>
+                        <span class="summary-value total">$${stats.grandTotal.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        /**
+         * 渲染單個清單項目
+         * @param {Object} item - 物品物件
+         * @returns {string} HTML 字串
+         */
+        function renderListItem(item) {
+            const categoryLabel = item.category === 'need' ? '需要' : '想要';
+            const categoryClass = item.category;
+
+            return `
+                <div class="list-item">
+                    <div class="item-info">
+                        <div class="item-name">${escapeHtml(item.name)}</div>
+                        <div class="item-meta">
+                            <span class="item-price">$${item.price.toFixed(2)}</span>
+                            <span class="item-category ${categoryClass}">${categoryLabel}</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteItem(${item.id})">刪除</button>
+                </div>
+            `;
+        }
+
+        /**
+         * 渲染操作按鈕
+         * @param {boolean} hasItems - 是否有物品
+         */
+        function renderActionButtons(hasItems) {
+            const container = document.getElementById('actionButtons');
+
+            if (hasItems) {
+                container.innerHTML = `
+                    <button class="btn-primary" onclick="window.location.href='index.html'">+ 新增物品</button>
+                    <button class="btn-danger" onclick="clearAllItems()">清空清單</button>
+                `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        // ========== 工具函數 ==========
+
+        /**
+         * 轉義 HTML 特殊字元，防止 XSS 攻擊
+         * @param {string} text - 要轉義的文本
+         * @returns {string} 轉義後的文本
+         */
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 應用初始化
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>

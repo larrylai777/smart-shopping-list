@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧購物清單 - 新增物品</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #7F8C8D;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-of-type {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #34495E;
+            box-shadow: 0 0 0 3px rgba(52, 73, 94, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #34495E;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2C3E50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 73, 94, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #E5E7EB;
+            color: #2C3E50;
+        }
+
+        .btn-secondary:hover {
+            background: #D1D5DB;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            display: none;
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stats-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #34495E;
+        }
+
+        .stats-label {
+            font-size: 12px;
+            color: #7F8C8D;
+            margin-top: 4px;
+        }
+
+        .info-box {
+            background: #EFF6FF;
+            border-left: 4px solid #34495E;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1E40AF;
+            margin-bottom: 20px;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 智慧購物清單</h1>
+            <p>理性消費，從現在開始</p>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 核心邏輯</strong>
+            「需要」的物品優先於「想要」的物品，同類別中低價優先。
+        </div>
+
+        <div class="stats">
+            <div class="stats-number" id="itemCount">0</div>
+            <div class="stats-label">已加入物品</div>
+        </div>
+
+        <div class="success-message" id="successMessage">✓ 物品已新增！</div>
+
+        <div class="form-card">
+            <form id="itemForm">
+                <div class="form-group">
+                    <label for="itemName">物品名稱 *</label>
+                    <input 
+                        type="text" 
+                        id="itemName" 
+                        placeholder="例如：牛奶、衣服、遊戲機" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="itemPrice">預估價格 (元) *</label>
+                    <input 
+                        type="number" 
+                        id="itemPrice" 
+                        placeholder="0" 
+                        min="0" 
+                        step="0.01" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="itemCategory">分類 *</label>
+                    <select id="itemCategory" required>
+                        <option value="">-- 請選擇 --</option>
+                        <option value="need">需要 (Need)</option>
+                        <option value="want">想要 (Want)</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">+ 新增物品</button>
+                    <button type="button" class="btn-secondary" id="viewListBtn">查看清單</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ========== 初始化與工具函數 ==========
+        
+        /**
+         * 初始化應用：載入現有資料並更新 UI
+         */
+        function initializeApp() {
+            updateItemCount();
+            setupEventListeners();
+        }
+
+        /**
+         * 設定事件監聽器
+         */
+        function setupEventListeners() {
+            const form = document.getElementById('itemForm');
+            const viewListBtn = document.getElementById('viewListBtn');
+
+            form.addEventListener('submit', handleFormSubmit);
+            viewListBtn.addEventListener('click', () => {
+                window.location.href = 'list.html';
+            });
+        }
+
+        // ========== 表單提交處理 ==========
+
+        /**
+         * 處理表單提交
+         * @param {Event} event - 表單提交事件
+         */
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            // 獲取表單值
+            const itemName = document.getElementById('itemName').value.trim();
+            const itemPrice = parseFloat(document.getElementById('itemPrice').value);
+            const itemCategory = document.getElementById('itemCategory').value;
+
+            // 驗證輸入
+            if (!itemName || itemPrice < 0 || !itemCategory) {
+                alert('請填寫所有欄位');
+                return;
+            }
+
+            // 建立新物品物件
+            const newItem = {
+                id: Date.now(), // 使用時間戳作為唯一 ID
+                name: itemName,
+                price: itemPrice,
+                category: itemCategory,
+                createdAt: new Date().toISOString()
+            };
+
+            // 儲存到 localStorage
+            saveItem(newItem);
+
+            // 顯示成功訊息
+            showSuccessMessage();
+
+            // 重置表單
+            document.getElementById('itemForm').reset();
+
+            // 更新計數
+            updateItemCount();
+        }
+
+        // ========== localStorage 操作 ==========
+
+        /**
+         * 儲存單個物品到 localStorage
+         * @param {Object} item - 物品物件
+         */
+        function saveItem(item) {
+            // 從 localStorage 讀取現有清單
+            const items = getItems();
+            // 新增物品
+            items.push(item);
+            // 儲存回 localStorage
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+        }
+
+        /**
+         * 從 localStorage 讀取所有物品
+         * @returns {Array} 物品陣列
+         */
+        function getItems() {
+            const data = localStorage.getItem('shoppingList');
+            return data ? JSON.parse(data) : [];
+        }
+
+        // ========== UI 更新 ==========
+
+        /**
+         * 更新物品計數顯示
+         */
+        function updateItemCount() {
+            const items = getItems();
+            document.getElementById('itemCount').textContent = items.length;
+        }
+
+        /**
+         * 顯示成功訊息
+         */
+        function showSuccessMessage() {
+            const message = document.getElementById('successMessage');
+            message.classList.add('show');
+            
+            // 3 秒後隱藏訊息
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 3000);
+        }
+
+        // 應用初始化
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
